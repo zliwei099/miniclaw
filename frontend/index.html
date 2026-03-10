@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 MiniClaw - 小小龙虾</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f9fafb;
+            height: 100vh;
+            display: flex;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .new-chat-btn:hover {
+            background: #ea580c;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            padding: 8px 12px;
+        }
+        
+        .chat-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #374151;
+        }
+        
+        .chat-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .chat-item.active {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+        
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .menu-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #374151;
+        }
+        
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 顶部栏 */
+        .header {
+            padding: 12px 24px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            font-size: 24px;
+        }
+        
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.connected {
+            background: #22c55e;
+        }
+        
+        .status-dot.connecting {
+            background: #eab308;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 消息区域 */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+            margin-left: auto;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message.assistant .avatar {
+            background: #f3f4f6;
+        }
+        
+        .message.user .avatar {
+            background: #f97316;
+            color: white;
+        }
+        
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .message.assistant .message-bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .message.user .message-bubble {
+            background: #f97316;
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        .message.user .message-time {
+            text-align: right;
+        }
+        
+        /* 工具卡片 */
+        .tool-card {
+            margin: 8px 0;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 13px;
+        }
+        
+        .tool-header {
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background: #f0fdf4;
+        }
+        
+        .tool-header:hover {
+            background: #dcfce7;
+        }
+        
+        .tool-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .tool-icon.pending {
+            background: #d1d5db;
+        }
+        
+        .tool-icon.running {
+            background: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        
+        .tool-icon.completed {
+            background: #22c55e;
+        }
+        
+        .tool-icon.error {
+            background: #ef4444;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .tool-name {
+            font-weight: 500;
+            color: #166534;
+        }
+        
+        .tool-status {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        .tool-arrow {
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+        
+        .tool-arrow.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .tool-body {
+            padding: 12px;
+            border-top: 1px solid #bbf7d0;
+            background: white;
+            display: none;
+        }
+        
+        .tool-body.expanded {
+            display: block;
+        }
+        
+        .tool-section {
+            margin-bottom: 8px;
+        }
+        
+        .tool-section-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .tool-code {
+            background: #f3f4f6;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        /* 输入框 */
+        .input-area {
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 12px;
+            background: #f3f4f6;
+            padding: 8px;
+            border-radius: 16px;
+        }
+        
+        .input-field {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px 12px;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            min-height: 20px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .send-btn:hover {
+            background: #ea580c;
+        }
+        
+        .send-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .input-hint {
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 8px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-title {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        /* 流式输出光标 */
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #374151;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="newChat()">
+                <span>+</span>
+                <span>新建会话</span>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="section-title">最近会话</div>
+            <div id="conversation-list">
+                <div class="chat-item active" id="current-chat">
+                    <span>💬</span>
+                    <span>当前会话</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="menu-item">
+                <span>🔧</span>
+                <span>工具管理</span>
+            </div>
+            <div class="menu-item">
+                <span>⚙️</span>
+                <span>设置</span>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- 主内容 -->
+    <main class="main">
+        <!-- 顶部栏 -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo">🦞</span>
+                <div>
+                    <div class="title">小小龙虾</div>
+                    <div class="subtitle">MiniClaw AI Agent</div>
+                </div>
+            </div>
+            
+            <div class="connection-status" id="connection-status">
+                <span class="status-dot connecting"></span>
+                <span>连接中...</span>
+            </div>
+        </header>
+        
+        <!-- 消息区域 -->
+        <div class="messages" id="messages">
+            <div class="empty-state">
+                <div class="empty-icon">🦞</div>
+                <div class="empty-title">你好！我是小小龙虾</div>
+                <div>有什么可以帮你的吗？</div>
+            </div>
+        </div>
+        
+        <!-- 输入框 -->
+        <div class="input-area">
+            <div class="input-container">
+                <textarea 
+                    class="input-field" 
+                    id="message-input"
+                    placeholder="输入消息..." 
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+            <div class="input-hint">按 Enter 发送，Shift + Enter 换行</div>
+        </div>
+    </main>
+    
+    <script>
+        // WebSocket 配置
+        const WS_URL = 'ws://localhost:8000/ws';
+        
+        let ws = null;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 10;
+        let reconnectInterval = 3000;
+        let currentConversationId = null;
+        let isProcessing = false;
+        let messageHistory = [];
+        let currentAssistantMessage = null;
+        let currentToolCalls = {};
+        
+        // 初始化连接
+        function connect() {
+            updateConnectionStatus('connecting');
+            
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = function() {
+                console.log('[WebSocket] 已连接');
+                updateConnectionStatus('connected');
+                reconnectAttempts = 0;
+                
+                // 清空欢迎消息
+                const messagesDiv = document.getElementById('messages');
+                if (messagesDiv.querySelector('.empty-state')) {
+                    messagesDiv.innerHTML = '';
+                }
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    console.error('[WebSocket] 消息解析失败:', e);
+                }
+            };
+            
+            ws.onclose = function() {
+                console.log('[WebSocket] 连接关闭');
+                updateConnectionStatus('disconnected');
+                ws = null;
+                
+                // 自动重连
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    console.log(`[WebSocket] ${reconnectInterval/1000}秒后重连 (${reconnectAttempts}/${maxReconnectAttempts})`);
+                    setTimeout(connect, reconnectInterval);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('[WebSocket] 错误:', error);
+                updateConnectionStatus('disconnected');
+            };
+        }
+        
+        // 更新连接状态显示
+        function updateConnectionStatus(status) {
+            const statusEl = document.getElementById('connection-status');
+            const dot = statusEl.querySelector('.status-dot');
+            const text = statusEl.querySelector('span:last-child');
+            
+            dot.className = 'status-dot ' + status;
+            
+            if (status === 'connected') {
+                text.textContent = '已连接';
+            } else if (status === 'connecting') {
+                text.textContent = '连接中...';
+            } else {
+                text.textContent = '未连接';
+            }
+        }
+        
+        // 处理收到的消息
+        function handleMessage(data) {
+            console.log('[WebSocket] 收到消息:', data);
+            
+            switch (data.type) {
+                case 'assistant_start':
+                    currentConversationId = data.data.conversation_id;
+                    currentAssistantMessage = createAssistantMessage('');
+                    currentToolCalls = {};
+                    isProcessing = true;
+                    updateSendButton();
+                    break;
+                    
+                case 'stream_chunk':
+                    if (currentAssistantMessage) {
+                        const content = currentAssistantMessage.querySelector('.message-bubble');
+                        content.textContent += data.data.content;
+                        scrollToBottom();
+                    }
+                    break;
+                    
+                case 'tool_call':
+                    const toolCall = data.data;
+                    currentToolCalls[toolCall.id] = toolCall;
+                    
+                    // 在助手消息中插入工具卡片
+                    if (currentAssistantMessage) {
+                        const toolCard = createToolCard(toolCall);
+                        currentAssistantMessage.insertBefore(toolCard, currentAssistantMessage.querySelector('.message-bubble'));
+                        scrollToBottom();
+                    }
+                    break;
+                    
+                case 'tool_result':
+                    const result = data.data;
+                    const tool = currentToolCalls[result.tool_call_id];
+                    if (tool) {
+                        tool.status = result.status;
+                        tool.result = result.result;
+                        tool.error = result.error;
+                        updateToolCard(tool);
+                    }
+                    break;
+                    
+                case 'assistant_end':
+                    isProcessing = false;
+                    updateSendButton();
+                    currentAssistantMessage = null;
+                    scrollToBottom();
+                    break;
+                    
+                case 'error':
+                    showError(data.data.message);
+                    isProcessing = false;
+                    updateSendButton();
+                    break;
+            }
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                showError('未连接到服务器');
+                return;
+            }
+            
+            // 添加用户消息到界面
+            addUserMessage(message);
+            
+            // 清空输入框
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // 发送 WebSocket 消息
+            ws.send(JSON.stringify({
+                type: 'user_message',
+                content: message,
+                conversation_id: currentConversationId
+            }));
+            
+            isProcessing = true;
+            updateSendButton();
+        }
+        
+        // 添加用户消息
+        function addUserMessage(content) {
+            const messagesDiv = document.getElementById('messages');
+            
+            // 移除空状态
+            const emptyState = messagesDiv.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="avatar">👤</div>
+                <div class="message-content">
+                    <div class="message-bubble">${escapeHtml(content)}</div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // 创建助手消息
+        function createAssistantMessage(content) {
+            const messagesDiv = document.getElementById('messages');
+            
+            const emptyState = messagesDiv.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">${content}<span class="typing-cursor"></span></div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+            
+            return messageDiv;
+        }
+        
+        // 创建工具卡片
+        function createToolCard(toolCall) {
+            const card = document.createElement('div');
+            card.className = 'tool-card';
+            card.id = `tool-${toolCall.id}`;
+            
+            const statusText = {
+                'pending': '等待中',
+                'running': '执行中',
+                'completed': '已完成',
+                'error': '出错'
+            };
+            
+            card.innerHTML = `
+                <div class="tool-header" onclick="toggleTool(this)">
+                    <span class="tool-icon ${toolCall.status}"></span>
+                    <span class="tool-name">${toolCall.name}</span>
+                    <span class="tool-status">(${statusText[toolCall.status] || toolCall.status})</span>
+                    <span class="tool-arrow">▼</span>
+                </div>
+                <div class="tool-body expanded">
+                    <div class="tool-section">
+                        <div class="tool-section-title">参数</div>
+                        <div class="tool-code">${JSON.stringify(toolCall.parameters, null, 2)}</div>
+                    </div>
+                    <div class="tool-result" style="display: none;">
+                        <div class="tool-section-title">结果</div>
+                        <div class="tool-code result-content"></div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 更新工具卡片
+        function updateToolCard(toolCall) {
+            const card = document.getElementById(`tool-${toolCall.id}`);
+            if (!card) return;
+            
+            const icon = card.querySelector('.tool-icon');
+            const statusText = card.querySelector('.tool-status');
+            const resultSection = card.querySelector('.tool-result');
+            const resultContent = card.querySelector('.result-content');
+            
+            const statusMap = {
+                'pending': '等待中',
+                'running': '执行中',
+                'completed': '已完成',
+                'error': '出错'
+            };
+            
+            icon.className = `tool-icon ${toolCall.status}`;
+            statusText.textContent = `(${statusMap[toolCall.status]})`;
+            
+            if (toolCall.result !== undefined || toolCall.error) {
+                resultSection.style.display = 'block';
+                resultContent.textContent = toolCall.error || JSON.stringify(toolCall.result, null, 2);
+            }
+        }
+        
+        // 切换工具卡片展开/折叠
+        function toggleTool(header) {
+            const body = header.nextElementSibling;
+            const arrow = header.querySelector('.tool-arrow');
+            body.classList.toggle('expanded');
+            arrow.classList.toggle('expanded');
+        }
+        
+        // 处理键盘事件
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 自动调整输入框高度
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // 更新发送按钮状态
+        function updateSendButton() {
+            const btn = document.getElementById('send-btn');
+            btn.disabled = isProcessing;
+        }
+        
+        // 新建会话
+        function newChat() {
+            currentConversationId = null;
+            currentAssistantMessage = null;
+            currentToolCalls = {};
+            isProcessing = false;
+            
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🦞</div>
+                    <div class="empty-title">你好！我是小小龙虾</div>
+                    <div>有什么可以帮你的吗？</div>
+                </div>
+            `;
+            
+            document.getElementById('message-input').value = '';
+            document.getElementById('message-input').style.height = 'auto';
+            updateSendButton();
+        }
+        
+        // 显示错误
+        function showError(message) {
+            const messagesDiv = document.getElementById('messages');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message assistant';
+            errorDiv.innerHTML = `
+                <div class="avatar">⚠️</div>
+                <div class="message-content">
+                    <div class="message-bubble" style="background: #fef2f2; border-color: #fecaca; color: #dc2626;">${escapeHtml(message)}</div>
+                </div>
+            `;
+            messagesDiv.appendChild(errorDiv);
+            scrollToBottom();
+        }
+        
+        // 转义 HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 获取当前时间
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // 页面加载时连接
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</body>
+</html>
