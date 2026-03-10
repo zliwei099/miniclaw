@@ -1,0 +1,40 @@
+{
+  "test_time": "2026-03-10T22:52:29.184934",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0
+  },
+  "results": [
+    {
+      "name": "健康检查",
+      "status": "PASS",
+      "details": "healthy",
+      "timestamp": "2026-03-10T22:52:29.145209"
+    },
+    {
+      "name": "工具列表 API",
+      "status": "PASS",
+      "details": "获取到 5 个工具",
+      "timestamp": "2026-03-10T22:52:29.148803"
+    },
+    {
+      "name": "WebSocket 连接",
+      "status": "PASS",
+      "details": "ping/pong 正常",
+      "timestamp": "2026-03-10T22:52:29.171047"
+    },
+    {
+      "name": "简单对话",
+      "status": "PASS",
+      "details": "收到 8 条响应",
+      "timestamp": "2026-03-10T22:52:29.177624"
+    },
+    {
+      "name": "工具调用",
+      "status": "PASS",
+      "details": "成功调用工具并获取结果",
+      "timestamp": "2026-03-10T22:52:29.184477"
+    }
+  ]
+}
